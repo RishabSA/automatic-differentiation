@@ -57,6 +57,9 @@ class Var:
         return z
 
     def __truediv__(self, other):
+        if other.value == 0:
+            raise ZeroDivisionError
+
         z = Var(self.value / other.value)
 
         # dz/d_self = 1.0 / other.value
@@ -76,6 +79,8 @@ class Var:
 
 
 if __name__ == "__main__":
+    # Reverse-Mode Automatic Differentiation
+
     x = Var(5)
     y = Var(10)
 

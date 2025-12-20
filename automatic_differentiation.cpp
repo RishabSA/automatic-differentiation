@@ -32,6 +32,10 @@ public:
         return z;
     };
 
+    Var operator+(Var& other) {
+        return add(other);
+    };
+
     Var subtract(Var& other) {
         Var z(val - other.val);
 
@@ -42,6 +46,10 @@ public:
         other.children.emplace_back(-1.0, &z);
 
         return z;
+    };
+
+    Var operator-(Var& other) {
+        return subtract(other);
     };
 
     Var multiply(Var& other) {
@@ -56,6 +64,10 @@ public:
         return z;
     };
 
+    Var operator*(Var& other) {
+        return multiply(other);
+    };
+
     Var divide(Var& other) {
         Var z(val / other.val);
 
@@ -63,17 +75,20 @@ public:
         children.emplace_back(1.0 / other.val, &z);
 
         // dz/d_other = -value / other.val^2
-        other.children.emplace_back(-val / pow(other.val, 2), &z);
+        other.children.emplace_back(-val / std::pow(other.val, 2), &z);
 
         return z;
     };
 
+    Var operator/(Var& other) {
+        return divide(other);
+    };
 
-    Var exponent(int power) {
-        Var z(pow(val, power));
+    Var pow(int power) {
+        Var z(std::pow(val, power));
 
         // dz/d_self = power * val ** (power - 1)
-        children.emplace_back(power * pow(val, power - 1), &z);
+        children.emplace_back(power * std::pow(val, power - 1), &z);
 
         return z;
     };
@@ -100,14 +115,16 @@ private:
 };
 
 int main () {
+    // Reverse-Mode Automatic Differentiation
+
     Var x(5.0);
     Var y(10.0);
 
-    Var z = x.exponent(2);
-    Var f = y.multiply(z);
+    Var z = x.pow(2);
+    Var f = y * z;
     f.setGradVal(1.0);
 
-    std::cout << f.getVal() << std::endl;
+    std::cout << "f(x) =s" << f.getVal() << std::endl; // 250
 
     std::cout << "df/dx = " << x.grad() << std::endl; // 100
     std::cout << "df/dy = " << y.grad() << std::endl; // 25
