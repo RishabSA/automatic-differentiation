@@ -1,4 +1,4 @@
-# Rishab's Automatic Differentiation Implementation
+# Automatic Differentiation with C++
 
 Resources I used as reference:
 
