@@ -17,7 +17,13 @@ public:
         data = std::vector<std::vector<Var>>(
             r, std::vector<Var>(c, Var(0.0))
         );
-    }
+    };
+
+    Var& operator()(int row, int col) {
+        return data[row][col];
+    };
+
+    void resetGradAndParents();
 
     std::string getValsMatrix();
 

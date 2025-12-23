@@ -1,5 +1,13 @@
 #include "autodiff/Matrix.hpp"
 
+void Matrix::resetGradAndParents() {
+    for (int i = 0; i < rows; ++i) {
+        for (int j = 0; j < cols; ++j) {
+            data[i][j].resetGradAndParents();
+        }
+    }
+}
+
 std::string Matrix::getValsMatrix() {
     std::string out;
 
@@ -43,10 +51,23 @@ void Matrix::randomInit() {
 Matrix Matrix::add(Matrix& other) {
     Matrix Y(rows, cols);
 
-    for (int i = 0; i < rows; i++) {
-        for (int j = 0; j < cols; j++) {
-            Y.data[i][j] = data[i][j] + other.data[i][j];
+    if (rows == other.rows && cols == other.cols) {
+        // Add element-wise values for matrices with the same shape
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < cols; j++) {
+                Y.data[i][j] = data[i][j] + other.data[i][j];
+            }
         }
+    } else if (other.rows == 1 && other.cols == 1) {
+        // Broadcast the scalar for matrix addition when the other has shape (1, 1)
+        Var val = other.data[0][0];
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < cols; j++) {
+                Y.data[i][j] = data[i][j] + val;
+            }
+        }
+    } else {
+        throw std::runtime_error("Dimension mismatch when attempting to add matrices");
     }
 
     return Y;
@@ -68,10 +89,23 @@ Matrix Matrix::add(double other) {
 Matrix Matrix::subtract(Matrix& other) {
     Matrix Y(rows, cols);
 
-    for (int i = 0; i < rows; i++) {
-        for (int j = 0; j < cols; j++) {
-            Y.data[i][j] = data[i][j] - other.data[i][j];
+    if (rows == other.rows && cols == other.cols) {
+        // Add element-wise values for matrices with the same shape
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < cols; j++) {
+                Y.data[i][j] = data[i][j] - other.data[i][j];
+            }
         }
+    } else if (other.rows == 1 && other.cols == 1) {
+        // Broadcast the scalar for matrix addition when the other has shape (1, 1)
+        Var val = other.data[0][0];
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < cols; j++) {
+                Y.data[i][j] = data[i][j] - val;
+            }
+        }
+    } else {
+        throw std::runtime_error("Dimension mismatch when attempting to add matrices");
     }
 
     return Y;

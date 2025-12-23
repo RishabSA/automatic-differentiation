@@ -1,13 +1,19 @@
 #include "autodiff/Var.hpp"
 
+void Var::resetGradAndParents() {
+    visited = false;
+    gradVal = 0.0;
+    parents.clear();
+}
+
 Var Var::add(Var& other) {
     Var y(val + other.val);
 
-    // dy/d_self = 1.0
-    children.emplace_back(1.0, &y);
+    // ∂y/∂this = 1.0
+    y.parents.emplace_back(1.0, this);
 
-    // dy/d_other = 1.0
-    other.children.emplace_back(1.0, &y);
+    // ∂y/∂other = 1.0
+    y.parents.emplace_back(1.0, &other);
 
     return y;
 };
@@ -15,11 +21,11 @@ Var Var::add(Var& other) {
 Var Var::subtract(Var& other) {
     Var y(val - other.val);
 
-    // dy/d_self = 1.0
-    children.emplace_back(1.0, &y);
+    // ∂y/∂this = 1.0
+    y.parents.emplace_back(1.0, this);
 
-    // dy/d_other = -1.0
-    other.children.emplace_back(-1.0, &y);
+    // ∂y/∂other = -1.0
+    y.parents.emplace_back(-1.0, &other);
 
     return y;
 };
@@ -27,11 +33,11 @@ Var Var::subtract(Var& other) {
 Var Var::multiply(Var& other) {
     Var y(val * other.val);
 
-    // dy/d_self = other.val
-    children.emplace_back(other.val, &y);
+    // ∂y/∂this = other.val
+    y.parents.emplace_back(other.val, this);
 
-    // dy/d_other = val
-    other.children.emplace_back(val, &y);
+    // ∂y/∂other = val
+    y.parents.emplace_back(val, &other);
 
     return y;
 };
@@ -39,11 +45,11 @@ Var Var::multiply(Var& other) {
 Var Var::divide(Var& other) {
     Var y(val / other.val);
 
-    // dy/d_self = 1 / other.val
-    children.emplace_back(1.0 / other.val, &y);
+    // ∂y/∂this = 1 / other.val
+    y.parents.emplace_back(1.0 / other.val, this);
 
-    // dy/d_other = -value / other.val^2
-    other.children.emplace_back(-val / std::pow(other.val, 2), &y);
+    // ∂y/∂other = -value / other.val^2
+    y.parents.emplace_back(-val / std::pow(other.val, 2), &other);
 
     return y;
 };
@@ -51,8 +57,8 @@ Var Var::divide(Var& other) {
 Var Var::pow(int power) {
     Var y(std::pow(val, power));
 
-    // dy/d_self = power * val ** (power - 1)
-    children.emplace_back(power * std::pow(val, power - 1), &y);
+    // ∂y/∂this = power * val ** (power - 1)
+    y.parents.emplace_back(power * std::pow(val, power - 1), this);
 
     return y;
 };
@@ -62,8 +68,8 @@ Var Var::pow(int power) {
 Var Var::sin() {
     Var y(std::sin(val));
 
-    // dy/d_self = cos(val)
-    children.emplace_back(std::cos(val), &y);
+    // ∂y/∂this = cos(val)
+    y.parents.emplace_back(std::cos(val), this);
 
     return y;
 };
@@ -71,8 +77,8 @@ Var Var::sin() {
 Var Var::cos() {
     Var y(std::cos(val));
 
-    // dy/d_self = -sin(val)
-    children.emplace_back(-std::sin(val), &y);
+    // ∂y/∂this = -sin(val)
+    y.parents.emplace_back(-std::sin(val), this);
 
     return y;
 };
@@ -80,8 +86,8 @@ Var Var::cos() {
 Var Var::tan() {
     Var y(std::tan(val));
 
-    // dy/d_self = sec**2(val)
-    children.emplace_back(std::pow(1 / std::cos(val), 2), &y);
+    // ∂y/∂this = sec**2(val)
+    y.parents.emplace_back(std::pow(1 / std::cos(val), 2), this);
 
     return y;
 };
@@ -91,8 +97,8 @@ Var Var::sec() {
 
     Var y(secant_val);
 
-    // dy/d_self = sec(val) * tan(val)
-    children.emplace_back(secant_val * std::tan(val), &y);
+    // ∂y/∂this = sec(val) * tan(val)
+    y.parents.emplace_back(secant_val * std::tan(val), this);
 
     return y;
 };
@@ -102,8 +108,8 @@ Var Var::csc() {
 
     Var y(cosecant_val);
 
-    // dy/d_self = - csc(val) * cot(val)
-    children.emplace_back(-cosecant_val * (1 / std::tan(val)), &y);
+    // ∂y/∂this = - csc(val) * cot(val)
+    y.parents.emplace_back(-cosecant_val * (1 / std::tan(val)), this);
 
     return y;
 };
@@ -111,8 +117,8 @@ Var Var::csc() {
 Var Var::cot() {
     Var y(1 / std::tan(val));
 
-    // dy/d_self = -csc**2(val)
-    children.emplace_back(-std::pow(1 / std::sin(val), 2), &y);
+    // ∂y/∂this = -csc**2(val)
+    y.parents.emplace_back(-std::pow(1 / std::sin(val), 2), this);
 
     return y;
 };
@@ -121,8 +127,8 @@ Var Var::cot() {
 Var Var::log() {
     Var y(std::log(val));
 
-    // dy/d_self = 1/val
-    children.emplace_back(1 / val, &y);
+    // ∂y/∂this = 1/val
+    y.parents.emplace_back(1 / val, this);
 
     return y;
 };
@@ -136,8 +142,8 @@ Var Var::log(int base) {
     // Use log base change rule with natural log
     Var y(std::log(val) / std::log(base));
 
-    // dy/d_self = 1/(ln(base) * val)
-    children.emplace_back(1 / (std::log(base) * val), &y);
+    // ∂y/∂this = 1/(ln(base) * val)
+    y.parents.emplace_back(1 / (std::log(base) * val), this);
 
     return y;
 };
@@ -145,23 +151,21 @@ Var Var::log(int base) {
 Var Var::exp() {
     Var y(std::exp(val));
 
-    // dy/d_self = e^x
-    children.emplace_back(std::exp(val), &y);
+    // ∂y/∂this = e^x
+    y.parents.emplace_back(std::exp(val), this);
 
     return y;
 };
 
-double Var::grad() {
-    if (std::isnan(gradVal)) {
-        // Compute derivative with the chain rule
-        double sum = 0.0;
-        
-        for (auto child : children) {
-            sum += std::get<0>(child) * std::get<1>(child)->grad();
-        }
+void Var::backward() {
+    if (visited) return;
+    visited = true;
 
-        gradVal = sum;
+    for (auto& p : parents) {
+        double local_grad = p.first;   // ∂this/∂parent
+        Var* parent = p.second;
+
+        parent->gradVal += gradVal * local_grad;  // dL/dparent += dL/dthis * dthis/dparent
+        parent->backward();
     }
-
-    return gradVal;
-};
+}

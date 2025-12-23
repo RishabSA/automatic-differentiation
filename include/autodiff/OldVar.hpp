@@ -1,15 +1,14 @@
 #pragma once
 
 #include <vector>
-#include <utility>
+#include <tuple>
 #include <cmath>
 
 class Var {
 public:
     Var(double initial) {
         val = initial;
-        visited = false;
-        gradVal = 0.0;
+        gradVal = std::nan("");
     };
 
     ~Var() = default;
@@ -24,7 +23,7 @@ public:
         gradVal = v;
     };
 
-    void resetGradAndParents();
+    void resetGradAndChildren();
 
     Var add(Var& other);
     Var operator+(Var& other) { return add(other); };
@@ -52,11 +51,10 @@ public:
 
     Var exp();
 
-    void backward();
+    double grad();
 
 private:
     double val;
     double gradVal;
-    bool visited;
-    std::vector<std::pair<double, Var*>> parents;
+    std::vector<std::tuple<double, Var*>> children;
 };
