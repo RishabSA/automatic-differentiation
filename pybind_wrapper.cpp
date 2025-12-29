@@ -1,9 +1,11 @@
 #include <pybind11/pybind11.h>
+#include <pybind11/stl.h>
 #include "include/Var.hpp"
+#include "include/Matrix.hpp"
 
 namespace py = pybind11;
 
-PYBIND11_MODULE(Var, m) {
+PYBIND11_MODULE(autodiff, m) {
     m.doc() = "Reverse-mode automatic differentiation scalar variable.";
 
     py::class_<Var>(m, "Var", 
@@ -24,10 +26,20 @@ after setting its gradient to 1.0 to accumulate gradients.
         .def_property("gradVal", &Var::getGradVal, &Var::setGradVal)
 
         .def("add", &Var::add, py::arg("other"))
+        .def("__add__", [](Var &a, Var &b) { return a.add(b); }, py::is_operator())
+
         .def("subtract", &Var::subtract, py::arg("other"))
+        .def("__sub__", [](Var &a, Var &b) { return a.subtract(b); }, py::is_operator())
+
         .def("multiply", &Var::multiply, py::arg("other"))
+        .def("__mul__", [](Var &a, Var &b) { return a.multiply(b); }, py::is_operator())
+        .def("__neg__", [](Var &a) { Var neg(-1.0); return a.multiply(neg); }, py::is_operator())
+
         .def("divide", &Var::divide, py::arg("other"))
+        .def("__truediv__", [](Var &a, Var &b) { return a.divide(b); }, py::is_operator())
+
         .def("pow", &Var::pow, py::arg("power"))
+        .def("__pow__", [](Var &a, int p) { return a.pow(p); }, py::is_operator(), py::arg("power"))
 
         .def("sin", &Var::sin)
         .def("cos", &Var::cos)
@@ -42,15 +54,79 @@ after setting its gradient to 1.0 to accumulate gradients.
         .def("resetGradAndParents", &Var::resetGradAndParents)
         .def("backward", &Var::backward)
 
-        // Operator overloads
-        .def("__add__", [](Var &a, Var &b) { return a.add(b); }, py::is_operator())
-        .def("__sub__", [](Var &a, Var &b) { return a.subtract(b); }, py::is_operator())
-        .def("__mul__", [](Var &a, Var &b) { return a.multiply(b); }, py::is_operator())
-        .def("__truediv__", [](Var &a, Var &b) { return a.divide(b); }, py::is_operator())
-        .def("__pow__", [](Var &a, int p) { return a.pow(p); }, py::is_operator(), py::arg("power"))
-        .def("__neg__", [](Var &a) { Var neg(-1.0); return a.multiply(neg); }, py::is_operator())
-
         .def("__repr__", [](const Var& v) {
             return "Var(val=" + std::to_string(v.getVal()) + ", grad=" + std::to_string(v.getGradVal()) + ")";
         });
+
+    py::class_<Matrix>(m, "Matrix", R"doc(
+A matrix of Var objects.
+)doc")
+        .def(py::init<int, int>(), py::arg("rows"), py::arg("cols"))
+        
+        .def_readonly("rows", &Matrix::rows)
+        .def_readonly("cols", &Matrix::cols)
+
+        .def("__getitem__", [](Matrix &M, py::tuple idx) -> Var& {
+                if (idx.size() != 2) throw std::runtime_error("Use M[i, j]");
+
+                int i = idx[0].cast<int>();
+                int j = idx[1].cast<int>();
+
+                if (i < 0 || i >= M.rows || j < 0 || j >= M.cols)
+                    throw std::out_of_range("Matrix index out of range");
+
+                return M(i, j);
+            },
+            py::return_value_policy::reference_internal)
+
+        .def("__setitem__", [](Matrix &M, py::tuple idx, double v) {
+                if (idx.size() != 2) throw std::runtime_error("Use M[i, j]");
+
+                int i = idx[0].cast<int>();
+                int j = idx[1].cast<int>();
+
+                if (i < 0 || i >= M.rows || j < 0 || j >= M.cols)
+                    throw std::out_of_range("Matrix index out of range");
+                    
+                M(i, j) = Var(v);
+            },
+            py::arg("index"), py::arg("value"))
+
+        .def("resetGradAndParents", &Matrix::resetGradAndParents)
+        .def("randomInit", &Matrix::randomInit)
+
+        .def("getValsMatrix", &Matrix::getValsMatrix)
+        .def("getGradsMatrix", &Matrix::getGradsMatrix)
+
+        .def("add", static_cast<Matrix (Matrix::*)(Matrix&)>(&Matrix::add), py::arg("other"))
+        .def("__add__", [](Matrix &A, Matrix &B) { return A.add(B); }, py::is_operator(), py::arg("other"))
+
+        .def("add", static_cast<Matrix (Matrix::*)(double)>(&Matrix::add), py::arg("other"))
+        .def("__add__", [](Matrix &A, double s) { return A.add(s); }, py::is_operator(), py::arg("other"))
+        .def("__radd__", [](Matrix &A, double s) { return A.add(s); }, py::is_operator(), py::arg("other"))
+
+        .def("subtract", static_cast<Matrix (Matrix::*)(Matrix&)>(&Matrix::subtract), py::arg("other"))
+        .def("__sub__", [](Matrix &A, Matrix &B) { return A.subtract(B); }, py::is_operator(), py::arg("other"))
+
+        .def("subtract", static_cast<Matrix (Matrix::*)(double)>(&Matrix::subtract), py::arg("other"))
+        .def("__sub__", [](Matrix &A, double s) { return A.subtract(s); }, py::is_operator(), py::arg("other"))
+
+        .def("multiply", &Matrix::multiply, py::arg("other"))
+        .def("__mul__", [](Matrix &A, double s) { return A.multiply(s); }, py::is_operator(), py::arg("other"))
+        .def("__rmul__", [](Matrix &A, double s) { return A.multiply(s); }, py::is_operator(), py::arg("other"))
+
+        .def("matmul", &Matrix::matmul, py::arg("other"))
+        .def("__matmul__", [](Matrix &A, Matrix &B) { return A.matmul(B); }, py::is_operator(), py::arg("other"))
+
+        .def("divide", &Matrix::divide, py::arg("other"))
+        .def("__truediv__", [](Matrix &A, double s) { return A.divide(s); }, py::is_operator(), py::arg("other"))
+
+        .def("pow", &Matrix::pow, py::arg("power"))
+        .def("__pow__", [](Matrix &A, int p) { return A.pow(p); }, py::is_operator(), py::arg("power"))
+
+        .def("__repr__", [](const Matrix &M) {
+            return "Matrix(" + std::to_string(M.rows) + " x " + std::to_string(M.cols) + ") = \n" + M.getValsMatrix();
+        });
+
+    m.def("matmul", &matmul, py::arg("A"), py::arg("B"));
 }

@@ -8,7 +8,7 @@ void Matrix::resetGradAndParents() {
     }
 }
 
-std::string Matrix::getValsMatrix() {
+std::string Matrix::getValsMatrix() const {
     std::string out;
 
     for (int i = 0; i < rows; i++) {
@@ -22,7 +22,7 @@ std::string Matrix::getValsMatrix() {
     return out;
 };
 
-std::string Matrix::getGradsMatrix() {
+std::string Matrix::getGradsMatrix() const {
     std::string out = "";
 
     for (int i = 0; i < rows; i++) {

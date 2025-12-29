@@ -25,9 +25,8 @@ public:
 
     void resetGradAndParents();
 
-    std::string getValsMatrix();
-
-    std::string getGradsMatrix();
+    std::string getValsMatrix() const;
+    std::string getGradsMatrix() const;
 
     void randomInit();
 
