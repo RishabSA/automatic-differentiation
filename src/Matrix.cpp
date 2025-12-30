@@ -60,7 +60,7 @@ Matrix Matrix::add(Matrix& other) {
         }
     } else if (other.rows == 1 && other.cols == 1) {
         // Broadcast the scalar for matrix addition when the other has shape (1, 1)
-        Var val = other.data[0][0];
+        Var& val = other.data[0][0];
         for (int i = 0; i < rows; i++) {
             for (int j = 0; j < cols; j++) {
                 Y.data[i][j] = data[i][j] + val;
@@ -78,8 +78,7 @@ Matrix Matrix::add(double other) {
 
     for (int i = 0; i < rows; i++) {
         for (int j = 0; j < cols; j++) {
-            Var val(other);
-            Y.data[i][j] = data[i][j] + val;
+            Y.data[i][j] = data[i][j] + other;
         }
     }
 
@@ -98,7 +97,7 @@ Matrix Matrix::subtract(Matrix& other) {
         }
     } else if (other.rows == 1 && other.cols == 1) {
         // Broadcast the scalar for matrix addition when the other has shape (1, 1)
-        Var val = other.data[0][0];
+        Var& val = other.data[0][0];
         for (int i = 0; i < rows; i++) {
             for (int j = 0; j < cols; j++) {
                 Y.data[i][j] = data[i][j] - val;
@@ -116,8 +115,7 @@ Matrix Matrix::subtract(double other) {
 
     for (int i = 0; i < rows; i++) {
         for (int j = 0; j < cols; j++) {
-            Var val(other);
-            Y.data[i][j] = data[i][j] - val;
+            Y.data[i][j] = data[i][j] - other;
         }
     }
 
@@ -129,8 +127,7 @@ Matrix Matrix::multiply(double other) {
 
     for (int i = 0; i < rows; i++) {
         for (int j = 0; j < cols; j++) {
-            Var val(other);
-            Y.data[i][j] = data[i][j] * val;
+            Y.data[i][j] = data[i][j] * other;
         }
     }
 
@@ -178,8 +175,7 @@ Matrix Matrix::divide(double other) {
 
     for (int i = 0; i < rows; i++) {
         for (int j = 0; j < cols; j++) {
-            Var val(other);
-            Y.data[i][j] = data[i][j] / val;
+            Y.data[i][j] = data[i][j] / other;
         }
     }
 

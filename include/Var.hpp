@@ -38,6 +38,18 @@ public:
     Var divide(Var& other);
     Var operator/(Var& other) { return divide(other); };
 
+    Var add(double other);
+    Var operator+(double other) { return add(other); };
+
+    Var subtract(double other);
+    Var operator-(double other) { return subtract(other); };
+
+    Var multiply(double other);
+    Var operator*(double other) { return multiply(other); };
+
+    Var divide(double other);
+    Var operator/(double other) { return divide(other); };
+
     Var pow(int power);
 
     Var sin();

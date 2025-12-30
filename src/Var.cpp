@@ -54,6 +54,35 @@ Var Var::divide(Var& other) {
     return y;
 };
 
+Var Var::add(double other) {
+    Var y(val + other);
+    // derivative wrt this is 1
+    y.parents.emplace_back(1.0, this);
+    return y;
+};
+
+Var Var::subtract(double other) {
+    Var y(val - other);
+    // derivative wrt this is 1
+    y.parents.emplace_back(1.0, this);
+    return y;
+};
+
+Var Var::multiply(double other) {
+    Var y(val * other);
+    // derivative wrt this is other
+    y.parents.emplace_back(other, this);
+    return y;
+};
+
+Var Var::divide(double other) {
+    Var y(val / other);
+    // derivative wrt this is 1/other
+    y.parents.emplace_back(1.0 / other, this);
+    return y;
+};
+
+
 Var Var::pow(int power) {
     Var y(std::pow(val, power));
 
