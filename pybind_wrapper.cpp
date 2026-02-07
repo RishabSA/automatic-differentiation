@@ -3,6 +3,8 @@
 #include "include/Var.hpp"
 #include "include/Matrix.hpp"
 #include "include/NeuralNetwork.hpp"
+#include "include/Optimizers.hpp"
+#include "include/LossFunctions.hpp"
 
 namespace py = pybind11;
 
@@ -158,17 +160,25 @@ A simple feed-forward neural network built from Matrix layers.
 )doc")
         .def(py::init<std::vector<std::pair<int, int>>>(), py::arg("layers"))
 
-        .def("getLayers", &NeuralNetwork::getLayers)
-        .def_property_readonly("layers", &NeuralNetwork::getLayers)
+        .def("getLayers", py::overload_cast<>(&NeuralNetwork::getLayers, py::const_), py::return_value_policy::reference_internal)
+        .def_property_readonly("layers", py::overload_cast<>(&NeuralNetwork::getLayers, py::const_), py::return_value_policy::reference_internal)
 
         .def("addLayer", &NeuralNetwork::addLayer, py::arg("layer"))
         .def("forward", &NeuralNetwork::forward, py::arg("input"))
+        .def("optimizeLayerWeights", &NeuralNetwork::optimizeLayerWeights, py::arg("learning_rate"))
         .def("getNetworkArchitecture", &NeuralNetwork::getNetworkArchitecture)
         
         .def("__repr__", [](const NeuralNetwork &model) {
             return "NeuralNetwork =\n" + model.getNetworkArchitecture();
         });
 
+    py::class_<GradientDescentOptimizer>(m, "GradientDescentOptimizer", R"doc(
+Simple gradient descent optimizer for a NeuralNetwork.
+)doc")
+        .def(py::init<double, NeuralNetwork*>(), py::arg("learning_rate"), py::arg("model"))
+        .def("optimizeModelWeights", &GradientDescentOptimizer::optimizeModelWeights)
+        .def("resetGrad", &GradientDescentOptimizer::resetGrad);
+
     m.def("matmul", &matmul, py::arg("A"), py::arg("B"));
-    m.def("computeMSELoss", &computeMSELoss, py::arg("labels"), py::arg("preds"));
+    m.def("MSELoss", &MSELoss, py::arg("labels"), py::arg("preds"));
 }

@@ -8,7 +8,8 @@ class NeuralNetwork {
 public:
     std::vector<std::pair<Matrix, Matrix>> layers;
 
-    std::vector<std::pair<Matrix, Matrix>> getLayers() const;
+    std::vector<std::pair<Matrix, Matrix>>& getLayers();
+    const std::vector<std::pair<Matrix, Matrix>>& getLayers() const;
 
     NeuralNetwork(std::vector<std::pair<int, int>> l);
 
@@ -18,7 +19,7 @@ public:
 
     Matrix forward(const Matrix& input);
 
+    void optimizeLayerWeights(double learning_rate);
+
     std::string getNetworkArchitecture() const;
 };
-
-Var computeMSELoss(Matrix& labels, Matrix& preds);

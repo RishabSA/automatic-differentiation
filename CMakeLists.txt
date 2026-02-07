@@ -23,6 +23,8 @@ pybind11_add_module(autodiff
     src/Var.cpp
     src/Matrix.cpp
     src/NeuralNetwork.cpp
+    src/Optimizers.cpp
+    src/LossFunctions.cpp
 )
 
 target_include_directories(autodiff PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)

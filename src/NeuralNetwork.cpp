@@ -16,7 +16,11 @@ NeuralNetwork::NeuralNetwork(std::vector<std::pair<int, int>> l) {
     }
 };
 
-std::vector<std::pair<Matrix, Matrix>> NeuralNetwork::getLayers() const {
+std::vector<std::pair<Matrix, Matrix>>& NeuralNetwork::getLayers() {
+    return layers;
+}
+
+const std::vector<std::pair<Matrix, Matrix>>& NeuralNetwork::getLayers() const {
     return layers;
 }
 
@@ -46,6 +50,36 @@ Matrix NeuralNetwork::forward(const Matrix& input) {
     return output;
 };
 
+void NeuralNetwork::optimizeLayerWeights(double learning_rate) {
+    // Backpropagation and Gradient Descent for each parameter
+    for (auto& layer : layers) {
+        Matrix& W = layer.first;
+        Matrix& b = layer.second;
+
+        // Update W
+        for (int i = 0; i < W.rows; i++) {
+            for (int j = 0; j < W.cols; j++) {
+                Var& weight_param = W.data[i][j];
+
+                // Partial derivative of the Loss function with respect to the weight parameter
+                double gradient = weight_param.getGrad();
+                weight_param.setVal(weight_param.getVal() - learning_rate * gradient);
+            }
+        }
+
+        // Update b
+        for (int i = 0; i < b.rows; i++) {
+            for (int j = 0; j < b.cols; j++) {
+                Var& bias_param = b.data[i][j];
+
+                // Partial derivative of the Loss function with respect to the bias parameter
+                double gradient = bias_param.getGrad();
+                bias_param.setVal(bias_param.getVal() - learning_rate * gradient);
+            }
+        }
+    }
+};
+
 std::string NeuralNetwork::getNetworkArchitecture() const {
     if (layers.empty()) {
         return "[]";
@@ -61,27 +95,4 @@ std::string NeuralNetwork::getNetworkArchitecture() const {
 
     architecture += "]";
     return architecture;
-}
-
-Var computeMSELoss(Matrix& labels, Matrix& preds) {
-    if (labels.rows != preds.rows || labels.cols != preds.cols) {
-        throw std::runtime_error("Dimension mismatch when attempting to compute loss");
-    }
-
-    Var loss(0.0);
-    int N = 0;
-
-    for (int i = 0; i < labels.rows; i++) {
-        for (int j = 0; j < labels.cols; j++) {
-            Var errors = labels.data[i][j] - preds.data[i][j];
-            Var squared_errors = errors.pow(2);
-            loss = loss + squared_errors; 
-            N++;
-        }
-    }
-
-    Var total(N);
-    loss = loss / total;
-
-    return loss;
 };
