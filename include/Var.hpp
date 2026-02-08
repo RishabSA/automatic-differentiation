@@ -66,6 +66,8 @@ public:
 
     Var exp();
 
+    Var abs();
+
     // Activation functions
     Var relu();
     Var leakyRelu(double alpha = 0.01);

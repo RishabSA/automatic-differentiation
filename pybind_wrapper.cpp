@@ -71,7 +71,10 @@ after setting its gradient to 1.0 to accumulate gradients.
         .def("elu", &Var::elu, py::arg("alpha") = 1.0)
 
         .def("log", &Var::log)
+
         .def("exp", &Var::exp)
+
+        .def("abs", &Var::abs)
 
         .def("resetGradAndParents", &Var::resetGradAndParents)
         .def("backward", &Var::backward)
@@ -234,11 +237,12 @@ A simple feed-forward neural network built from Matrix layers.
 Simple gradient descent optimizer for a NeuralNetwork.
 )doc")
         .def(py::init<double, NeuralNetwork*>(), py::arg("learning_rate"), py::arg("model"), py::keep_alive<1, 2>())
-        .def("optimizeModelWeights", &GradientDescentOptimizer::optimizeModelWeights)
+        .def("optimize", &GradientDescentOptimizer::optimize)
         .def("resetGrad", &GradientDescentOptimizer::resetGrad);
 
     m.def("matmul", &matmul, py::arg("A"), py::arg("B"));
     m.def("MSELoss", &MSELoss, py::arg("labels"), py::arg("preds"));
+    m.def("MAELoss", &MAELoss, py::arg("labels"), py::arg("preds"));
     m.def("BCELoss", &BCELoss, py::arg("labels"), py::arg("preds"), py::arg("eps") = 1e-7);
 
     py::module_ ops = m.def_submodule("ops");
@@ -250,4 +254,5 @@ Simple gradient descent optimizer for a NeuralNetwork.
     ops.def("cot", [](Var& v) { return v.cot(); }, py::arg("var"));
     ops.def("log", [](Var& v) { return v.log(); }, py::arg("var"));
     ops.def("exp", [](Var& v) { return v.exp(); }, py::arg("var"));
+    ops.def("abs", [](Var& v) { return v.abs(); }, py::arg("var"));
 }

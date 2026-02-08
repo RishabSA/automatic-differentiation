@@ -221,6 +221,19 @@ Var Var::exp() {
     return y;
 }
 
+Var Var::abs() {
+    Var y(std::abs(node->val));
+
+    double abs_derivative = 0.0;
+    if (node->val > 0.0) abs_derivative = 1.0;
+    else if (node->val < 0.0) abs_derivative = -1.0;
+
+    // ∂y/∂this = abs_derivative
+    y.node->parents.emplace_back(abs_derivative, node);
+    node->pending_children += 1;
+
+    return y;
+}
 
 Var Var::relu() {
     Var y(node->val > 0.0 ? node->val : 0.0);

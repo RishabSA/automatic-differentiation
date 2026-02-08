@@ -2,9 +2,9 @@
 
 ## Setup
 
-My implementation uses C++ for all derivatives, matrices, and neural networks. PyBind11 is used to make these accessible in Python.
+**AutoNeuroNet** is a C++ implementation of automatic differentiation, with custom matrices and a full neural network architecture and training pipeline. It comes with Python bindings through PyBind11, allowing for quick and easy development of networks through Python, backed with C++.
 
-To build the necessary C++ classes for use in Python run:
+To build the necessary C++ dependencies for use in Python run:
 
 ```
 cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Release -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
@@ -17,6 +17,7 @@ Resources I used as reference:
 
 - [What's Automatic Differentiation? - HuggingFace](https://huggingface.co/blog/andmholm/what-is-automatic-differentiation)
 - [Differentiate Automatically](https://comp6248.ecs.soton.ac.uk/handouts/autograd-handouts.pdf)
+- [Andrej Karpathy's MicroGrad](https://github.com/karpathy/micrograd)
 
 ---
 

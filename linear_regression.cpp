@@ -40,7 +40,7 @@ int main () {
         // Backpropagation (Reverse-Mode Automatic Differentiation)
         loss.setGrad(1.0);
         loss.backward();
-        optimizer.optimizeModelWeights();
+        optimizer.optimize();
 
         if (epoch % 100 == 0) {
             std::cout << "Epoch " << epoch + 1 << " | Train Loss: " << loss_val << "\n";

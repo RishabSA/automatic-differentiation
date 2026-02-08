@@ -11,7 +11,7 @@ public:
 
     GradientDescentOptimizer(double lr, NeuralNetwork* model);
 
-    void optimizeModelWeights();
+    void optimize();
     
     void resetGrad();
 };

@@ -5,9 +5,9 @@ GradientDescentOptimizer::GradientDescentOptimizer(double lr, NeuralNetwork* mod
     neural_network = model;
 };
 
-void GradientDescentOptimizer::optimizeModelWeights() {
+void GradientDescentOptimizer::optimize() {
     // Backpropagation and Gradient Descent for each parameter
-    for (auto& layer :neural_network->layers) {
+    for (auto& layer : neural_network->layers) {
         if (layer->trainable) {
             layer->optimizeWeights(learning_rate);
         }

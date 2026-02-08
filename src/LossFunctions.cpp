@@ -6,18 +6,37 @@ Var MSELoss(Matrix& labels, Matrix& preds) {
     }
 
     Var loss(0.0);
-    int N = 0;
 
     for (int i = 0; i < labels.rows; i++) {
         for (int j = 0; j < labels.cols; j++) {
             Var errors = labels.data[i][j] - preds.data[i][j];
             Var squared_errors = errors.pow(2);
-            loss = loss + squared_errors; 
-            N++;
+            loss = loss + squared_errors;
         }
     }
 
-    Var total(N);
+    Var total(labels.rows * labels.cols);
+    loss = loss / total;
+
+    return loss;
+};
+
+Var MAELoss(Matrix& labels, Matrix& preds) {
+    if (labels.rows != preds.rows || labels.cols != preds.cols) {
+        throw std::runtime_error("Dimension mismatch when attempting to compute loss");
+    }
+
+    Var loss(0.0);
+
+    for (int i = 0; i < labels.rows; i++) {
+        for (int j = 0; j < labels.cols; j++) {
+            Var errors = labels.data[i][j] - preds.data[i][j];
+            Var absolute_errors = errors.abs();
+            loss = loss + absolute_errors;
+        }
+    }
+
+    Var total(labels.rows * labels.cols);
     loss = loss / total;
 
     return loss;
@@ -29,7 +48,6 @@ Var BCELoss(Matrix& labels, Matrix& preds, double eps) {
     }
 
     Var loss(0.0);
-    int N = 0;
 
     for (int i = 0; i < labels.rows; i++) {
         for (int j = 0; j < labels.cols; j++) {
@@ -50,11 +68,10 @@ Var BCELoss(Matrix& labels, Matrix& preds, double eps) {
 
             Var sum = term1 + term2;
             loss = loss - sum;
-            N++;
         }
     }
 
-    Var total(N);
+    Var total(labels.rows * labels.cols);
     loss = loss / total;
 
     return loss;
